@@ -7,7 +7,11 @@
 * [GetDatasetList](#GetDatasetList)
 * [GetSourceFileInfo](#GetSourceFileInfo)
 * [GetSourceFileStatus](#GetSourceFileStatus)
-* [GetIpfsCidStat](#GetIpfsCidStat)
+* [GetDownloadFileInfoByIpfsCid](#GetDownloadFileInfoByIpfsCid)
+* [GetDatasetsByGroupName](#GetDatasetsByGroupName)
+* [StoreSourceFileByGroup](#StoreSourceFileByGroup)
+* [StoreCarFiles](#StoreCarFiles)
+
 
 ## NewAPIClient
 
@@ -325,38 +329,159 @@ type StorageProvider struct {
 
 
 
-## GetIpfsCidStat
+## GetDownloadFileInfoByIpfsCid
 
 Definition:
 
 ```shell
-func GetIpfsCidInfo(ipfsApiUrl string, ipfsCid string) (IpfsCidInfo, error)
+func GetDownloadFileInfoByIpfsCid(ipfsCid string) ([]DownloadFileInfo, error) 
 ```
 
 Inputs:
 
 ```shell
-ipfsApiUrl             # API address of IPFS service.
 ipfsCid                # IPFS cid to be queried
 ```
 
 Outputs:
 
 ```shell
-IpfsCidInfo            # Status information corresponds to the queried IPFS CID
+DownloadFileInfo       # List of download file information
 error                  # error or nil
 ```
 
-**About `IpfsCidInfo`:**
+**About `DownloadFileInfo`:**
 ```go
-type IpfsCidInfo struct {
-    IpfsCid     string `json:"ipfs_cid"`     // The IPFS CID
-    DataSize    int64  `json:"data_size"`    // File or directory size corresponding to the IPFS cid
-    IsDirectory bool   `json:"is_directory"` // Is a directory corresponding to the IPFS CID
+type DownloadFileInfo struct {
+    SourceName  string `json:"source_name"`   // The name of the data source 
+    DownloadUrl string `json:"download_url"`  // The download url for the CAR of the split file, used to download the CAR file
+    IsDirectory bool   `json:"is_directory"`  // Is a directory corresponding to the IPFS CID
 }
 ```
 | Field Name | Data Type | Explanation |
 | --- | --- | --- |
-| IpfsCid | string | The CID (Content Identifier) of the IPFS data |
-| DataSize | int64 | The size of the file or directory corresponding to the IPFS CID |
+| SourceName | string | The name of the data source |
+| DownloadUrl | string | The download url for the CAR of the split file, used to download the CAR file |
 | IsDirectory | bool | Whether the data corresponding to the IPFS CID is a directory or not |
+
+
+## GetDatasetsByGroupName
+
+Definition:
+
+```shell
+func GetDatasetsByGroupName(groupName string) ([]GetDatasetsByGroupNameResp, error)
+```
+
+Inputs:
+
+```shell
+groupName                # The name of the group
+```
+
+Outputs:
+
+```shell
+GetDatasetsByGroupNameResp   # List of datasets
+error                        # error or nil
+```
+
+**About `GetDatasetsByGroupNameResp`:**
+```go
+type GetDatasetsByGroupNameResp struct {
+    DatasetId     int64  `json:"dataset_id"`      //
+    DatasetName   string `json:"dataset_name"`    //
+    DatasetStatus string `json:"dataset_status"`  //
+}
+```
+| Field Name | Data Type | Explanation |
+| --- | --- | --- |
+| DatasetId | int64 | The ID of the dataset |
+| DatasetName | string | The name of the dataset |
+| DatasetStatus | string | The status of the dataset, indicating downloading, downloaded, or others |
+
+
+## StoreSourceFileByGroup
+
+Definition:
+
+```shell
+func StoreSourceFileByGroup(groupName string, dataList [][]IpfsData) error
+```
+
+Inputs:
+
+```shell
+groupName                # The name of the group
+dataList                 # The list of IPFS data list
+```
+
+Outputs:
+
+```shell
+error                        # error or nil
+```
+
+**About `IpfsData`:**
+
+```go
+type IpfsData struct {
+    IpfsCid     string `json:"ipfs_cid"`
+    SourceName  string `json:"source_name"`
+    DataSize    int64  `json:"data_size"`
+    IsDirectory bool   `json:"is_directory"`
+    DownloadUrl string `json:"download_url"`
+}
+```
+
+| Field Name | Data Type | Explanation |
+| --- | --- | --- |
+| IpfsCid | string | The CID (Content Identifier) of the data in IPFS, which is used to uniquely identify the data |
+| SourceName | string | The name of the data source |
+| DataSize | int64 | The size of the data in bytes |
+| IsDirectory | bool | The type of data, used to differentiate whether it is a directory or not |
+| DownloadUrl | string | The download link for the data, used to download the data file from IPFS |
+
+
+
+## StoreCarFiles
+
+Definition:
+
+```shell
+func StoreCarFiles(datasetId int64, carList []*CarInfo) error 
+```
+
+Inputs:
+
+```shell
+datasetId                # The ID of the dataset
+carList                  # The pointer to the list of CARs information
+```
+
+Outputs:
+
+```shell
+error                        # error or nil
+```
+
+**About `CarInfo`:**
+```go
+type CarInfo struct {
+    FileName    string `json:"file_name"`    // The name of the split file 
+    DataCid     string `json:"data_cid"`     // The CID (Content Identifier) of the data associated with the split file
+    SourceSize  int64  `json:"source_size"`  // The size of the source in bytes
+    CarSize     int64  `json:"car_size"`     // The size of the CAR in bytes
+    PieceCid    string `json:"piece_cid"`    // The CID (Content Identifier) of the piece associated with the split file
+    DownloadUrl string `json:"download_url"` // The download url for the CAR of the split file, used to download the CAR file
+}
+```
+| Field Name | Data Type | Explanation                                                                   |
+| --- | --- |-------------------------------------------------------------------------------|
+| FileName | string | The name of the split file                                                    |
+| DataCid | string | The CID (Content Identifier) of the data associated with the split file       |
+| SourceSize | int64 | The size of the source in bytes                                               |
+| CarSize | int64 | The size of the CAR in bytes                                                  |
+| PieceCid | string | The CID (Content Identifier) of the piece associated with the split file      |
+| DownloadUrl | string | The download url for the CAR of the split file, used to download the CAR file |
+
