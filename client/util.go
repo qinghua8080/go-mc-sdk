@@ -75,7 +75,7 @@ func downloadFileByAria2(conf *Aria2Conf, downUrl, outPath string) error {
 }
 
 func httpPost(uri, key, token string, params interface{}) ([]byte, error) {
-	response, err := web.HttpRequestWithKey(http.MethodPost, uri, key, token, params)
+	response, err := HttpRequestWithKey(http.MethodPost, uri, key, token, params)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return nil, err
@@ -174,16 +174,16 @@ func isFile(dirFullPath string) (*bool, error) {
 	}
 }
 
-func dirSize(path string) int64 {
+func calcDirSize(dirPath string) int64 {
 	var size int64
-	entrys, err := os.ReadDir(path)
+	entrys, err := os.ReadDir(dirPath)
 	if err != nil {
 		logs.GetLogger().Error(err)
 		return 0
 	}
 	for _, entry := range entrys {
 		if entry.IsDir() {
-			size += dirSize(filepath.Join(path, entry.Name()))
+			size += calcDirSize(filepath.Join(dirPath, entry.Name()))
 		} else {
 			info, err := entry.Info()
 			if err == nil {
@@ -580,7 +580,7 @@ func GreedyDataSets(dirPath string, givenSize int64) []DataSet {
 
 	entrys := GetFileInfoList(dirPath)
 	if entrys == nil {
-		log.Fatal("failed to get files information")
+		logs.GetLogger().Fatal("failed to get files information")
 	}
 
 	sort.Slice(entrys, func(i, j int) bool {
