@@ -519,5 +519,9 @@ func TestMinioDemo(c *cli.Context) error {
 	}
 	mc.ListBuckets()
 
+	mc.FPutObject(bucketName, "logs/01/info.log", "./logs/info.log")
+
+	mc.FGetObject(bucketName, "logs/01/info.log", "./tmp/info.log")
+
 	return nil
 }

@@ -574,8 +574,31 @@ func (m *MetaClient) GetObject() {
 
 }
 
-func (m *MetaClient) PutObject() {
+func (m *MetaClient) FPutObject(bucketName, objectName, fileName string) {
 
+	options := minio.PutObjectOptions{
+		ContentType: "application/octet-stream",
+	}
+
+	// Upload the file to the specified bucket with the given name.
+	info, err := m.MinioCli.FPutObject(context.Background(), bucketName, objectName, fileName, options)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return
+	}
+	logs.GetLogger().Debugf("Upload info:%+v", info)
+	logs.GetLogger().Infof("Successfully uploaded %s to %s/%s", fileName, bucketName, objectName)
+}
+
+func (m *MetaClient) FGetObject(bucketName, objectName, filePath string) {
+	options := minio.GetObjectOptions{}
+	err := m.MinioCli.FGetObject(context.Background(), bucketName, objectName, filePath, options)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return
+	}
+
+	logs.GetLogger().Infof("Successfully downloaded %s from bucket %s to %s", objectName, bucketName, filePath)
 }
 
 func (m *MetaClient) CopyObject() {
