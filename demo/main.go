@@ -512,6 +512,11 @@ func TestMinioDemo(c *cli.Context) error {
 	}
 	logs.GetLogger().Infoln("create minio client successfully")
 
+	bucketName := "test-001"
+	mc.RemoveBucket(bucketName)
+	if !mc.BucketExists(bucketName) {
+		mc.MakeBucket(bucketName)
+	}
 	mc.ListBuckets()
 
 	return nil

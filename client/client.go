@@ -530,22 +530,38 @@ func (m *MetaClient) CreateMinioCli(endpoint, key, secret string) error {
 	return nil
 }
 
-func (m *MetaClient) MakeBucket() {
-
+func (m *MetaClient) MakeBucket(bucketName string) {
+	// Create a bucket at region 'us-east-1' with object locking enabled.
+	err := m.MinioCli.MakeBucket(context.Background(), bucketName, minio.MakeBucketOptions{})
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return
+	}
+	logs.GetLogger().Info("Successfully created bucket:", bucketName)
 }
 
-func (m *MetaClient) RemoveBucket() {
-
+func (m *MetaClient) RemoveBucket(bucketName string) {
+	err := m.MinioCli.RemoveBucket(context.Background(), bucketName)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return
+	}
+	logs.GetLogger().Info("Successfully remove bucket:", bucketName)
 }
 
-func (m *MetaClient) BucketExists() {
-
+func (m *MetaClient) BucketExists(bucketName string) bool {
+	found, err := m.MinioCli.BucketExists(context.Background(), bucketName)
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return false
+	}
+	return found
 }
 
 func (m *MetaClient) ListBuckets() {
 	buckets, err := m.MinioCli.ListBuckets(context.Background())
 	if err != nil {
-		logs.GetLogger().Fatal(err)
+		logs.GetLogger().Error(err)
 		return
 	}
 
