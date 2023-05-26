@@ -11,12 +11,15 @@ import (
 )
 
 var (
-	Conf           *sdk.ClientConf
-	KeyFlag        cli.StringFlag
-	TokenFlag      cli.StringFlag
-	ApiUrlFlag     cli.StringFlag
-	GatewayUrlFlag cli.StringFlag
-	MetaUrlFlag    cli.StringFlag
+	Conf            *sdk.ClientConf
+	KeyFlag         cli.StringFlag
+	TokenFlag       cli.StringFlag
+	ApiUrlFlag      cli.StringFlag
+	GatewayUrlFlag  cli.StringFlag
+	MetaUrlFlag     cli.StringFlag
+	MinioUrlFlag    cli.StringFlag
+	MinioKeyFlag    cli.StringFlag
+	MinioSecretFlag cli.StringFlag
 )
 
 func init() {
@@ -52,6 +55,25 @@ func init() {
 		Usage: "url of meta server",
 		Value: Conf.MetaServerUrl,
 	}
+
+	MinioUrlFlag = cli.StringFlag{
+		Name:  "minio-url",
+		Usage: "url of minio server",
+		Value: Conf.MinioUrl,
+	}
+
+	MinioKeyFlag = cli.StringFlag{
+		Name:  "minio-key",
+		Usage: "key of minio server",
+		Value: Conf.MinioKey,
+	}
+
+	MinioSecretFlag = cli.StringFlag{
+		Name:  "minio-secret",
+		Usage: "secret of minio server",
+		Value: Conf.MinioSecret,
+	}
+
 }
 
 func main() {
@@ -265,6 +287,21 @@ func main() {
 				},
 				Action: BackupIpfsDataDemo,
 			},
+
+			{
+				Name:  "minio",
+				Usage: "Test for Minio",
+				Flags: []cli.Flag{
+					//&cli.StringFlag{
+					//	Name:  "task-name",
+					//	Usage: "name of a task.",
+					//},
+					&MinioUrlFlag,
+					&MinioKeyFlag,
+					&MinioSecretFlag,
+				},
+				Action: TestMinioDemo,
+			},
 		},
 	}
 
@@ -453,6 +490,29 @@ func BackupIpfsDataDemo(c *cli.Context) error {
 		return err
 	}
 	logs.GetLogger().Infoln("generate CAR for datastore successfully")
+
+	return nil
+}
+
+func TestMinioDemo(c *cli.Context) error {
+	mc := buildClient(c)
+	if mc == nil {
+		logs.GetLogger().Error("create meta client failed, please check the input parameters")
+		return errors.New("create meta client failed")
+	}
+
+	minioUrl := c.String("minio-url")
+	minioKey := c.String("minio-key")
+	minioSec := c.String("minio-secret")
+
+	err := mc.CreateMinioCli(minioUrl, minioKey, minioSec)
+	if err != nil {
+		logs.GetLogger().Error("failed to  create minio client:", err)
+		return err
+	}
+	logs.GetLogger().Infoln("create minio client successfully")
+
+	mc.ListBuckets()
 
 	return nil
 }

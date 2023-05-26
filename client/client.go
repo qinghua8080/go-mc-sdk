@@ -1,11 +1,14 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"github.com/filswan/go-swan-lib/client"
 	"github.com/filswan/go-swan-lib/logs"
 	shell "github.com/ipfs/go-ipfs-api"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"path/filepath"
 	"strings"
 )
@@ -14,6 +17,11 @@ type MetaClient struct {
 	ApiKey   string
 	ApiToken string
 	MetaUrl  string
+
+	MinioUrl    string
+	MinioKey    string
+	MinioSecret string
+	MinioCli    *minio.Client
 
 	sh    *shell.Shell
 	aria2 *client.Aria2Client
@@ -499,4 +507,68 @@ func (m *MetaClient) BackupIpfsData(taskName, repoDir, outputDir, apiUrl, gatewa
 	logs.GetLogger().Info("all datasets done!")
 
 	return nil
+}
+
+func (m *MetaClient) CreateMinioCli(endpoint, key, secret string) error {
+
+	useSSL := false
+	minioClient, err := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(key, secret, ""),
+		Secure: useSSL,
+	})
+
+	if err != nil {
+		logs.GetLogger().Errorf("Get Download File Info Error: %s \n", err)
+		return err
+	}
+
+	m.MetaUrl = endpoint
+	m.MinioKey = key
+	m.MinioSecret = secret
+	m.MinioCli = minioClient
+
+	return nil
+}
+
+func (m *MetaClient) MakeBucket() {
+
+}
+
+func (m *MetaClient) RemoveBucket() {
+
+}
+
+func (m *MetaClient) BucketExists() {
+
+}
+
+func (m *MetaClient) ListBuckets() {
+	buckets, err := m.MinioCli.ListBuckets(context.Background())
+	if err != nil {
+		logs.GetLogger().Fatal(err)
+		return
+	}
+
+	for _, bucket := range buckets {
+		logs.GetLogger().Info(bucket)
+	}
+}
+
+func (m *MetaClient) GetObject() {
+
+}
+
+func (m *MetaClient) PutObject() {
+
+}
+
+func (m *MetaClient) CopyObject() {
+
+}
+
+func (m *MetaClient) StatObject() {
+
+}
+func (m *MetaClient) RemoveObject() {
+
 }

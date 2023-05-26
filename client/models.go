@@ -7,6 +7,9 @@ type ClientConf struct {
 	IpfsGatewayUrl string    `toml:"ipfs_gateway_url"`
 	MetaServerUrl  string    `toml:"meta_server_url"`
 	Aria2          Aria2Conf `toml:"aria2"`
+	MinioUrl       string    `json:"minio_url"`
+	MinioKey       string    `json:"minio_key"`
+	MinioSecret    string    `json:"minio_secret"`
 }
 
 type Aria2Conf struct {
