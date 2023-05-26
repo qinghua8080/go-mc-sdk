@@ -570,12 +570,7 @@ func (m *MetaClient) ListBuckets() {
 	}
 }
 
-func (m *MetaClient) GetObject() {
-
-}
-
 func (m *MetaClient) FPutObject(bucketName, objectName, fileName string) {
-
 	options := minio.PutObjectOptions{
 		ContentType: "application/octet-stream",
 	}
@@ -601,13 +596,39 @@ func (m *MetaClient) FGetObject(bucketName, objectName, filePath string) {
 	logs.GetLogger().Infof("Successfully downloaded %s from bucket %s to %s", objectName, bucketName, filePath)
 }
 
-func (m *MetaClient) CopyObject() {
-
+func (m *MetaClient) StatObject(bucketName, objectName string) {
+	objInfo, err := m.MinioCli.StatObject(context.Background(), bucketName, objectName, minio.StatObjectOptions{})
+	if err != nil {
+		logs.GetLogger().Error(err)
+		return
+	}
+	logs.GetLogger().Infof("Object stat info: %+v", objInfo)
 }
 
-func (m *MetaClient) StatObject() {
+func (m *MetaClient) RemoveObject(bucketName, prefixName string) {
+	objectsCh := make(chan minio.ObjectInfo)
 
-}
-func (m *MetaClient) RemoveObject() {
+	// Send object names that are needed to be removed to objectsCh
+	go func() {
+		defer close(objectsCh)
+		// List all objects from a bucket-name with a matching prefix.
+		options := minio.ListObjectsOptions{Prefix: prefixName}
+		for object := range m.MinioCli.ListObjects(context.Background(), bucketName, options) {
+			if object.Err != nil {
+				logs.GetLogger().Error(object.Err)
+			}
+			logs.GetLogger().Info("Will be delete object: ", object.Key)
+			objectsCh <- object
+		}
+	}()
 
+	opts := minio.RemoveObjectsOptions{
+		GovernanceBypass: true,
+	}
+
+	for rErr := range m.MinioCli.RemoveObjects(context.Background(), bucketName, objectsCh, opts) {
+		logs.GetLogger().Error("Error detected during deletion: ", rErr)
+	}
+
+	logs.GetLogger().Infof("Successfully remove objects %s/%s", bucketName, prefixName)
 }
