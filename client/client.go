@@ -605,14 +605,14 @@ func (m *MetaClient) StatObject(bucketName, objectName string) {
 	logs.GetLogger().Infof("Object stat info: %+v", objInfo)
 }
 
-func (m *MetaClient) RemoveObject(bucketName, prefixName string) {
+func (m *MetaClient) RemoveObject(bucketName, prefixName string, recursive bool) {
 	objectsCh := make(chan minio.ObjectInfo)
 
 	// Send object names that are needed to be removed to objectsCh
 	go func() {
 		defer close(objectsCh)
 		// List all objects from a bucket-name with a matching prefix.
-		options := minio.ListObjectsOptions{Prefix: prefixName}
+		options := minio.ListObjectsOptions{Prefix: prefixName, Recursive: recursive}
 		for object := range m.MinioCli.ListObjects(context.Background(), bucketName, options) {
 			if object.Err != nil {
 				logs.GetLogger().Error(object.Err)

@@ -519,14 +519,14 @@ func TestMinioDemo(c *cli.Context) error {
 	}
 	mc.ListBuckets()
 
-	//mc.FPutObject(bucketName, "logs/01/error.log", "./logs/error.log")
-	//mc.FPutObject(bucketName, "logs/01/info.log", "./logs/info.log")
-	//mc.FPutObject(bucketName, "logs/02/error.log", "./logs/error.log")
-	//mc.FPutObject(bucketName, "logs/02/info.log", "./logs/info.log")
+	mc.FPutObject(bucketName, "logs/01/error.log", "./logs/error.log")
+	mc.FPutObject(bucketName, "logs/01/info.log", "./logs/info.log")
+	mc.FPutObject(bucketName, "logs/02/error.log", "./logs/error.log")
+	mc.FPutObject(bucketName, "logs/02/info.log", "./logs/info.log")
 	//mc.FGetObject(bucketName, "logs/01/info.log", "./tmp/info.log")
 
 	//mc.StatObject(bucketName, "logs/01/info.log")
-	mc.RemoveObject(bucketName, "logs/01/")
+	//mc.RemoveObject(bucketName, "logs", true)
 
 	return nil
 }
